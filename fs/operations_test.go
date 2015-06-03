@@ -170,6 +170,10 @@ func TestCopyRedownload(t *testing.T) {
 }
 
 func TestSyncBasedOnCheckSum(t *testing.T) {
+	// Create a file and sync it. Change the last modified date and resync.
+	// If we're only doing sync by size and checksum, we expect nothing to
+	// to be transferred on the second sync.
+
 	cleanTempDir(t)
 	fs.Config.CheckSum = true
 
