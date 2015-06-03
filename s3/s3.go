@@ -382,6 +382,8 @@ func (f *FsS3) Mkdir() error {
 	if err, ok := err.(*s3.Error); ok {
 		if err.Code == "BucketAlreadyOwnedByYou" {
 			return nil
+		} else if err.Code == "BucketAlreadyExists" {
+			return nil
 		}
 	}
 	return err
