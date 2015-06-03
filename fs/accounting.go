@@ -52,7 +52,7 @@ type StatsInfo struct {
 	errors       int64
 	checks       int64
 	checking     StringSet
-	transfers    int64
+	Transfers    int64
 	transferring StringSet
 	start        time.Time
 }
@@ -87,7 +87,7 @@ Elapsed time:  %v
 		s.bytes, speed,
 		s.errors,
 		s.checks,
-		s.transfers,
+		s.Transfers,
 		dt)
 	if len(s.checking) > 0 {
 		fmt.Fprintf(buf, "Checking:      %s\n", s.checking)
@@ -165,7 +165,7 @@ func (s *StatsInfo) DoneTransferring(o Object) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	delete(s.transferring, o.Remote())
-	s.transfers += 1
+	s.Transfers += 1
 }
 
 // Account limits and accounts for one transfer
