@@ -8,6 +8,7 @@ import (
 	"mime"
 	"path"
 	"sync"
+	"time"
 )
 
 // Work out modify window for fses passed in - sets Config.ModifyWindow
@@ -66,21 +67,28 @@ func CheckMd5sums(src, dst Object) (bool, error) {
 // Otherwise the file is considered to be not equal including if there
 // were errors reading info.
 func Equal(src, dst Object) bool {
+
 	if src.Size() != dst.Size() {
 		Debug(src, "Sizes differ")
 		return false
 	}
 
-	// Size the same so check the mtime
-	srcModTime := src.ModTime()
-	dstModTime := dst.ModTime()
-	dt := dstModTime.Sub(srcModTime)
-	ModifyWindow := Config.ModifyWindow
-	if dt >= ModifyWindow || dt <= -ModifyWindow {
-		Debug(src, "Modification times differ by %s: %v, %v", dt, srcModTime, dstModTime)
-	} else {
-		Debug(src, "Size and modification time the same (differ by %s, within tolerance %s)", dt, ModifyWindow)
-		return true
+	var srcModTime time.Time
+
+	if !Config.CheckSum {
+
+		// Size the same so check the mtime
+		srcModTime := src.ModTime()
+		dstModTime := dst.ModTime()
+		dt := dstModTime.Sub(srcModTime)
+		ModifyWindow := Config.ModifyWindow
+		if dt >= ModifyWindow || dt <= -ModifyWindow {
+			Debug(src, "Modification times differ by %s: %v, %v", dt, srcModTime, dstModTime)
+		} else {
+			Debug(src, "Size and modification time the same (differ by %s, within tolerance %s)", dt, ModifyWindow)
+			return true
+		}
+
 	}
 
 	// mtime is unreadable or different but size is the same so
@@ -91,12 +99,15 @@ func Equal(src, dst Object) bool {
 		return false
 	}
 
-	// Size and MD5 the same but mtime different so update the
-	// mtime of the dst object here
-	dst.SetModTime(srcModTime)
+	if !Config.CheckSum {
+		// Size and MD5 the same but mtime different so update the
+		// mtime of the dst object here
+		dst.SetModTime(srcModTime)
+	}
 
 	Debug(src, "Size and MD5SUM of src and dst objects identical")
 	return true
+
 }
 
 // Returns a guess at the mime type from the extension
@@ -215,11 +226,12 @@ func checkOne(pair ObjectPair, out ObjectPairChan) {
 	if !src.Storable() {
 		return
 	}
-	// Check to see if changed or not
+
 	if Equal(src, dst) {
 		Debug(src, "Unchanged skipping")
 		return
 	}
+
 	out <- pair
 }
 

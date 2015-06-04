@@ -42,6 +42,7 @@ var (
 	checkers     = pflag.IntP("checkers", "", 8, "Number of checkers to run in parallel.")
 	transfers    = pflag.IntP("transfers", "", 4, "Number of file transfers to run in parallel.")
 	configFile   = pflag.StringP("config", "", ConfigPath, "Config file.")
+	checkSum     = pflag.BoolP("checksum", "c", false, "Skip based on checksum, not mod-time & size")
 	dryRun       = pflag.BoolP("dry-run", "n", false, "Do a trial run with no permanent changes")
 	bwLimit      SizeSuffix
 )
@@ -115,6 +116,7 @@ type ConfigInfo struct {
 	Verbose      bool
 	Quiet        bool
 	DryRun       bool
+	CheckSum     bool
 	ModifyWindow time.Duration
 	Checkers     int
 	Transfers    int
@@ -152,6 +154,7 @@ func LoadConfig() {
 	Config.Checkers = *checkers
 	Config.Transfers = *transfers
 	Config.DryRun = *dryRun
+	Config.CheckSum = *checkSum
 
 	ConfigPath = *configFile
 
